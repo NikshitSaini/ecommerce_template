@@ -82,15 +82,13 @@ function AppLayout() {
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/profile" element={<DynamicSkinRenderer skinKey="ProfilePage.jsx" FallbackComponent={ProfilePage} />} />
 
-          {/* ── Skin Playground (store owner only) ───────────────────────── */}
+          {/* ── Skin Playground (publicly accessible) ───────────────────────── */}
           <Route
             path="/playground"
             element={
-              <ProtectedRoute role="store_owner">
-                <Suspense fallback={<FullscreenLoader />}>
-                  <SkinPlayground />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<FullscreenLoader />}>
+                <SkinPlayground />
+              </Suspense>
             }
           />
 

@@ -173,98 +173,22 @@ export function PublicHeader() {
               )}
             </Link>
 
-            {/* Auth */}
-            {isAuthenticated ? (
-              <div style={{ position: 'relative' }} ref={userMenuRef}>
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.6rem',
-                    padding: '0.5rem 0.8rem', background: colors.bgLight,
-                    border: `1px solid ${colors.border}`, color: colors.textMain,
-                    cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem',
-                    borderRadius: '30px', fontWeight: '600'
-                  }}
-                >
-                  <div style={{
-                    width: '24px', height: '24px',
-                    borderRadius: '50%', background: colors.accent,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: colors.white, fontSize: '0.7rem', fontWeight: '700',
-                  }}>
-                    {(user?.name || user?.email || 'U').split(' ').map(n => n[0]).join('').toUpperCase()}
-                  </div>
-                  <span>Account</span>
-                  <ChevronDown size={14} style={{ transform: userMenuOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }} />
-                </button>
-                {userMenuOpen && (
-                  <div style={{
-                    position: 'absolute', top: '120%', right: 0,
-                    width: '220px', background: colors.white, 
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '12px', overflow: 'hidden',
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                    padding: '0.5rem',
-                  }}>
-                    {user?.role === 'admin' && (
-                      <Link to="/admin" onClick={() => setUserMenuOpen(false)} style={{
-                        display: 'flex', alignItems: 'center', gap: '0.75rem',
-                        padding: '0.8rem 1rem', color: colors.accent,
-                        fontSize: '0.85rem', fontWeight: '700', textDecoration: 'none',
-                        borderRadius: '8px'
-                      }}>
-                        <LayoutDashboard size={16} /> Admin Panel
-                      </Link>
-                    )}
-                    {[
-                      { to: '/profile', icon: User, label: 'My Account' },
-                    ].map(({ to, icon: Icon, label }) => (
-                      <Link key={to} to={to} onClick={() => setUserMenuOpen(false)} style={{
-                        display: 'flex', alignItems: 'center', gap: '0.75rem',
-                        padding: '0.8rem 1rem', color: colors.textMain,
-                        fontSize: '0.85rem', textDecoration: 'none',
-                        transition: 'all 0.2s', borderRadius: '8px'
-                      }}
-                        onMouseEnter={(e) => { 
-                            e.currentTarget.style.background = colors.bgLight;
-                            e.currentTarget.style.color = colors.accent;
-                        }}
-                        onMouseLeave={(e) => { 
-                            e.currentTarget.style.background = 'none';
-                            e.currentTarget.style.color = colors.textMain;
-                        }}
-                      >
-                        <Icon size={16} /> {label}
-                      </Link>
-                    ))}
-                    <div style={{ borderTop: `1px solid ${colors.border}`, margin: '0.5rem' }} />
-                    <button onClick={handleSignOut} style={{
-                      width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
-                      padding: '0.8rem 1rem', background: 'none', border: 'none',
-                      color: '#d9534f', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left',
-                      fontWeight: '600'
-                    }}>
-                      <LogOut size={16} /> Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link to="/signin" style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                padding: '0.75rem 1.5rem',
-                background: colors.accent, color: colors.white,
-                fontSize: '0.85rem', fontWeight: '700',
-                borderRadius: '8px', textDecoration: 'none', 
-                transition: 'all 0.2s',
-                boxShadow: '0 4px 12px rgba(181, 141, 103, 0.2)'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = colors.accentDark; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = colors.accent; }}
-              >
-                Sign In
-              </Link>
-            )}
+            {/* Playground Link */}
+            <Link to="/playground" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.6rem 1.25rem',
+              background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+              color: colors.white,
+              fontSize: '0.85rem', fontWeight: '700',
+              borderRadius: '8px', textDecoration: 'none', 
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
+            >
+              🎨 Playground
+            </Link>
 
             {/* Mobile menu toggle */}
             <button

@@ -100,12 +100,32 @@ export function StoreProvider({ children }) {
       }
     }
 
+    function getMergedSkins(id, firestoreSkins) {
+      const merged = { ...(firestoreSkins || {}) };
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const prefix = `playground_skin_${id}_`;
+          if (key && key.startsWith(prefix)) {
+            const slotKey = key.substring(prefix.length);
+            const val = localStorage.getItem(key);
+            if (val !== null) {
+              merged[slotKey] = val;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[StoreContext] LocalStorage read failed:', err);
+      }
+      return merged;
+    }
+
     function applyStoreData(id, data) {
       console.log(`[StoreContext] ✅ Store applied: ${id}`);
       setStoreId(id);
       setStoreName(data.config?.name || id);
       setStoreConfig(data.config || {});
-      setActiveSkin(data.activeSkin || {});
+      setActiveSkin(getMergedSkins(id, data.activeSkin));
       setOwnerUid(data.ownerUid || null);
     }
 
@@ -128,10 +148,45 @@ export function StoreProvider({ children }) {
     try {
       const snap = await getDoc(doc(db, 'stores', storeId));
       if (snap.exists()) {
-        setActiveSkin(snap.data().activeSkin || {});
+        const merged = { ...(snap.data().activeSkin || {}) };
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const prefix = `playground_skin_${storeId}_`;
+          if (key && key.startsWith(prefix)) {
+            const slotKey = key.substring(prefix.length);
+            const val = localStorage.getItem(key);
+            if (val !== null) {
+              merged[slotKey] = val;
+            }
+          }
+        }
+        setActiveSkin(merged);
       }
     } catch (err) {
       console.error('[StoreContext] Failed to refresh skin:', err);
+    }
+  }
+
+  function updateLocalSkin(key, code) {
+    if (!storeId) return;
+    try {
+      localStorage.setItem(`playground_skin_${storeId}_${key}`, code);
+      setActiveSkin(prev => ({
+        ...prev,
+        [key]: code
+      }));
+    } catch (err) {
+      console.error('[StoreContext] Failed to save skin to localStorage:', err);
+    }
+  }
+
+  function clearLocalSkin(key) {
+    if (!storeId) return;
+    try {
+      localStorage.removeItem(`playground_skin_${storeId}_${key}`);
+      refreshSkin();
+    } catch (err) {
+      console.error('[StoreContext] Failed to remove skin from localStorage:', err);
     }
   }
 
@@ -144,6 +199,8 @@ export function StoreProvider({ children }) {
     loading,
     error,
     refreshSkin,
+    updateLocalSkin,
+    clearLocalSkin,
   };
 
   if (loading) {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { useStore } from '../../context/StoreContext';
 import { useAuth } from '../../context/AuthContext';
@@ -16,9 +16,10 @@ import { defaultSkins } from './skinDefaults';
  * and see a live preview. Saving writes directly to Firestore.
  */
 export default function SkinPlayground() {
-  const { storeId, storeName, activeSkin, refreshSkin } = useStore();
-  const { user } = useAuth();
+  const { storeId, storeName, activeSkin, refreshSkin, updateLocalSkin, clearLocalSkin } = useStore();
+  const { user, isStoreOwner, isSuperAdmin } = useAuth();
   const { products } = useStoreProducts();
+  const canWriteFirebase = isStoreOwner || isSuperAdmin;
 
   const [selectedKey, setSelectedKey] = useState('Home.jsx');
   const [editorCode, setEditorCode] = useState('');
@@ -45,14 +46,18 @@ export default function SkinPlayground() {
     setSaving(true);
     setSaveStatus(null);
     try {
-      await updateDoc(doc(db, 'stores', storeId), {
-        activeSkin: {
-          ...activeSkin,
-          [selectedKey]: editorCode
-        },
-        updatedAt: new Date().toISOString(),
-      });
-      await refreshSkin();
+      if (canWriteFirebase) {
+        await updateDoc(doc(db, 'stores', storeId), {
+          activeSkin: {
+            ...activeSkin,
+            [selectedKey]: editorCode
+          },
+          updatedAt: new Date().toISOString(),
+        });
+        await refreshSkin();
+      } else {
+        updateLocalSkin(selectedKey, editorCode);
+      }
       setIsDirty(false);
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus(null), 3000);
@@ -64,10 +69,26 @@ export default function SkinPlayground() {
     }
   };
 
-  const handleReset = () => {
-    const current = activeSkin?.[selectedKey] || defaultSkins[selectedKey] || '';
-    setEditorCode(current);
-    setIsDirty(false);
+  const handleReset = async () => {
+    if (!canWriteFirebase) {
+      clearLocalSkin(selectedKey);
+      try {
+        const snap = await getDoc(doc(db, 'stores', storeId));
+        if (snap.exists()) {
+          const dbSkin = snap.data().activeSkin?.[selectedKey] || defaultSkins[selectedKey] || '';
+          setEditorCode(dbSkin);
+        } else {
+          setEditorCode(defaultSkins[selectedKey] || '');
+        }
+      } catch (err) {
+        setEditorCode(defaultSkins[selectedKey] || '');
+      }
+      setIsDirty(false);
+    } else {
+      const current = activeSkin?.[selectedKey] || defaultSkins[selectedKey] || '';
+      setEditorCode(current);
+      setIsDirty(false);
+    }
   };
 
   // Keyboard shortcut: Ctrl+S / Cmd+S to save
@@ -114,7 +135,7 @@ export default function SkinPlayground() {
       }}>
         {/* Left: Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <a href="/admin" style={{
+          <a href="/" style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
@@ -125,7 +146,7 @@ export default function SkinPlayground() {
           }}
           onMouseEnter={e => e.currentTarget.style.color = '#e6edf3'}
           onMouseLeave={e => e.currentTarget.style.color = '#8b949e'}>
-            ← Admin
+            ← Back to Store
           </a>
           <div style={{ width: '1px', height: '20px', background: '#30363d' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -201,6 +222,19 @@ export default function SkinPlayground() {
               ✗ Save failed
             </span>
           )}
+          {!canWriteFirebase && (
+            <span style={{
+              padding: '0.2rem 0.6rem',
+              background: 'rgba(245, 158, 11, 0.15)',
+              color: '#fbbf24',
+              borderRadius: '0.25rem',
+              fontSize: '0.7rem',
+              fontWeight: '600',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+            }} title="Changes will be saved locally in this browser">
+              💾 Local Mode
+            </span>
+          )}
           {isDirty && (
             <div style={{
               width: '8px', height: '8px',
@@ -225,7 +259,7 @@ export default function SkinPlayground() {
               minWidth: '80px',
             }}
           >
-            {isSaving ? 'Saving…' : '💾 Save'}
+            {isSaving ? 'Saving…' : canWriteFirebase ? '💾 Save' : '💾 Save Local'}
           </button>
         </div>
       </div>
