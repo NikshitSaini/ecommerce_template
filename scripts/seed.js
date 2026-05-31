@@ -297,6 +297,59 @@ async function runSeed() {
       ],
     });
 
+    let seededWatchStore = false;
+    const devOverride = process.env.VITE_DEV_STORE_OVERRIDE;
+    if (devOverride === 'store_watch_prem') {
+      await seedStore({
+        ownerEmail: 'owner@watchprem.com',
+        ownerPassword: 'StoreOwner123!',
+        ownerName: 'Alex (Watch Premium)',
+        storeId: 'store_watch_prem',
+        storeName: 'Watch Premium',
+        domain: 'watchprem.com',
+        currency: '$',
+        products: [
+          {
+            title: 'Classic Chronograph',
+            price: 250,
+            category: 'Watches',
+            images: ['https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800&auto=format&fit=crop&q=60'],
+            attributes: { brand: 'ChronoCo', movement: 'Mechanical', strap: 'Leather' },
+            stock: 15,
+            description: 'An elegant mechanical chronograph watch with a genuine leather strap, white dial, and scratch-resistant sapphire crystal.',
+          },
+          {
+            title: 'Ocean Diver Pro',
+            price: 450,
+            category: 'Watches',
+            images: ['https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?w=800&auto=format&fit=crop&q=60'],
+            attributes: { brand: 'HydroSpec', movement: 'Automatic', waterResistance: '200m' },
+            stock: 10,
+            description: 'Professional diving watch featuring an automatic movement, black rotating bezel, and luminous hands. Water-resistant up to 200 meters.',
+          },
+          {
+            title: 'Minimalist Slate',
+            price: 180,
+            category: 'Watches',
+            images: ['https://images.unsplash.com/photo-1547996160-81dfa63595aa?w=800&auto=format&fit=crop&q=60'],
+            attributes: { brand: 'Nordic', movement: 'Quartz', batteryLife: '2 years' },
+            stock: 30,
+            description: 'Ultra-thin minimalist watch with a dark slate grey dial, polished silver markers, and a sleek matte black stainless steel mesh band.',
+          },
+          {
+            title: 'Gold Heritage',
+            price: 850,
+            category: 'Watches',
+            images: ['https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&auto=format&fit=crop&q=60'],
+            attributes: { brand: 'Aurelia', movement: 'Automatic', caseMaterial: '18k Gold Plated' },
+            stock: 5,
+            description: 'A luxurious heirloom-quality watch featuring an 18k gold-plated case, open-heart dial revealing the automatic movement, and a premium leather strap.',
+          }
+        ],
+      });
+      seededWatchStore = true;
+    }
+
     console.log('\n\n✅ ════════════════ SEEDING COMPLETE ════════════════');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🔑  SUPER ADMIN:');
@@ -316,6 +369,14 @@ async function runSeed() {
     console.log('    StoreId:  store_med_tech');
     console.log('    Dev URL:  localhost:5173 (set VITE_DEV_STORE_OVERRIDE=store_med_tech)');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    if (seededWatchStore) {
+      console.log('⌚  WATCH PREMIUM OWNER:');
+      console.log('    Email:    owner@watchprem.com');
+      console.log('    Password: StoreOwner123!');
+      console.log('    StoreId:  store_watch_prem');
+      console.log('    Dev URL:  localhost:5173 (set VITE_DEV_STORE_OVERRIDE=store_watch_prem)');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    }
     console.log('\n📋 Next steps:');
     console.log('   1. Deploy security rules: firebase deploy --only firestore:rules');
     console.log('   2. Start dev server:      npm run dev');
