@@ -177,27 +177,31 @@ async function seedStore({ ownerEmail, ownerPassword, ownerName, storeId, storeN
 
   // 3. Store document
   const storeRef = db.collection('stores').doc(storeId);
+  const storeSnap = await storeRef.get();
+  const existingData = storeSnap.exists ? storeSnap.data() : {};
+
   batch.set(storeRef, {
     domain,
     ownerUid,
     config: {
       name: storeName,
       currency,
-      logo: '',
-      primaryColor: '#764ba2',
-      isActive: true,
+      logo: existingData.config?.logo || '',
+      primaryColor: existingData.config?.primaryColor || '#764ba2',
+      isActive: existingData.config?.isActive !== undefined ? existingData.config.isActive : true,
     },
-    activeSkin: {
+    activeSkin: existingData.activeSkin || {
       'Home.jsx': DEFAULT_HOME_SKIN,
       'ProductListing.jsx': DEFAULT_LISTING_SKIN,
     },
-    createdAt: new Date().toISOString(),
+    createdAt: existingData.createdAt || new Date().toISOString(),
   });
   console.log(`  ✅ Store doc written (stores/${storeId})`);
 
   // 4. Seed products subcollection
   for (const product of products) {
-    const ref = db.collection('stores').doc(storeId).collection('products').doc();
+    const productSlug = product.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const ref = db.collection('stores').doc(storeId).collection('products').doc(productSlug);
     batch.set(ref, {
       ...product,
       createdAt: new Date().toISOString(),
